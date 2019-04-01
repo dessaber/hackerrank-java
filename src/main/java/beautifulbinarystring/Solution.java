@@ -1,7 +1,5 @@
 package beautifulbinarystring;
 
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
-
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -16,8 +14,6 @@ public class Solution {
         int currentPos = changeableString.indexOf(pattern);
         int result = 0;
         while (currentPos != -1) {
-            System.out.println(changeableString);
-            System.out.println(result);
             changeableString.delete(0, currentPos + pattern.length());
             currentPos = changeableString.indexOf(pattern);
             result++;
