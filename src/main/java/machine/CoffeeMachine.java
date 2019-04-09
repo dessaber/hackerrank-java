@@ -10,6 +10,7 @@ public class CoffeeMachine {
     private int coffee;
     private int disposableCups;
     private int money;
+    private boolean running;
 
     private CoffeeMachine(int water, int milk, int coffee, int cups, int money) {
         this.milk = milk;
@@ -17,6 +18,7 @@ public class CoffeeMachine {
         this.water = water;
         this.coffee = coffee;
         this.money = money;
+        this.running = true;
     }
 
     private String getState() {
@@ -32,16 +34,16 @@ public class CoffeeMachine {
     }
 
     public static void main(String[] args) {
-        CoffeeMachine myMachine = new CoffeeMachine(1200, 540, 120, 9, 550);
+        CoffeeMachine myMachine = new CoffeeMachine(400, 540, 120, 9, 550);
         Scanner scanner = new Scanner(System.in);
         OperationalBuilder operationalBuilder = myMachine.new OperationalBuilder(scanner);
 
-        System.out.println(myMachine.getState());
-        System.out.print("\nWrite action (buy, fill, take): ");
-        String action = scanner.next().trim();
-        operationalBuilder.getOperational(action).perform();
-        System.out.println();
-        System.out.println(myMachine.getState());
+        while (myMachine.running) {
+            System.out.print("\nWrite action (buy, fill, take, remaining, exit): ");
+            String action = scanner.next().trim();
+            operationalBuilder.getOperational(action).perform();
+            System.out.println();
+        }
     }
 
     interface Operational {
@@ -64,11 +66,31 @@ public class CoffeeMachine {
 
         @Override
         public void perform() {
-            water -= waterForOneCup;
-            milk -= milkForOneCup;
-            coffee -= coffeeForOneCup;
-            disposableCups--;
-            money += cost;
+            int newWater = water - waterForOneCup;
+            int newMilk = milk - milkForOneCup;
+            int newCoffee = coffee - coffeeForOneCup;
+            int newCups = disposableCups - 1;
+
+            String missing = "";
+            if (newWater < 0)
+                missing = "water";
+            else if (newMilk < 0)
+                missing = "milk";
+            else if (newCoffee < 0)
+                missing = "coffee";
+            else if (newCups < 0)
+                missing = "cups";
+
+            if (!missing.isEmpty())
+                System.out.print(String.format("Sorry, not enough %s!", missing));
+            else {
+                System.out.print("I have enough resources, making you a coffee!");
+                water = newWater;
+                milk = newMilk;
+                coffee = newCoffee;
+                disposableCups = newCups;
+                money += cost;
+            }
         }
     }
 
@@ -118,6 +140,22 @@ public class CoffeeMachine {
         }
     }
 
+    class StateScanner implements Operational {
+
+        @Override
+        public void perform() {
+            System.out.println(CoffeeMachine.this.getState());
+        }
+    }
+
+    class Quitter implements Operational {
+
+        @Override
+        public void perform() {
+            CoffeeMachine.this.running = false;
+        }
+    }
+
     class CoffeeMakerBuilder implements Operational {
         Map<Integer, CoffeeMaker> makers;
         Scanner scanner;
@@ -137,9 +175,12 @@ public class CoffeeMachine {
 
         @Override
         public void perform() {
-            System.out.print("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino: ");
-            CoffeeMaker coffeeMaker = getCoffeeMaker(scanner.nextInt());
-            coffeeMaker.perform();
+            System.out.print("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino, back - to main menu: ");
+            String input = scanner.next().trim();
+            if (input.length() == 1) {
+                CoffeeMaker coffeeMaker = getCoffeeMaker(Integer.parseInt(input));
+                coffeeMaker.perform();
+            }
         }
     }
 
@@ -151,6 +192,8 @@ public class CoffeeMachine {
                 put("fill", new Filler(scanner));
                 put("take", new MoneyGiver());
                 put("buy", new CoffeeMakerBuilder(scanner));
+                put("remaining", new StateScanner());
+                put("exit", new Quitter());
             }};
         }
 
