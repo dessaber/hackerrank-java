@@ -51,7 +51,7 @@ public class Solution {
         while (scanner.hasNextLine()) {
             lines.add(scanner.nextLine());
         }
-        return lines.stream().toArray(String[]::new);
+        return lines.toArray(new String[0]);
     }
 }
 
