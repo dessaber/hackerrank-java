@@ -1,6 +1,7 @@
 package compressstring;
 
 import java.util.Scanner;
+import java.util.stream.Stream;
 
 public class Solution {
     public static void main(String[] args) {
@@ -9,7 +10,7 @@ public class Solution {
         System.out.println(compress(input, 1, input[0], 1, new StringBuilder()));
     }
 
-    public static String compress(char[] input, int currentPos, char currentSymbol, int currentFreq, StringBuilder builder) {
+    private static String compress(char[] input, int currentPos, char currentSymbol, int currentFreq, StringBuilder builder) {
         if (currentPos == input.length - 1) {
             builder.append(currentSymbol);
             if (input[currentPos] != currentSymbol) {
@@ -29,5 +30,4 @@ public class Solution {
             return compress(input, currentPos + 1, currentSymbol, currentFreq + 1, builder);
         }
     }
-
 }
